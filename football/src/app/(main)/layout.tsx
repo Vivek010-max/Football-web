@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -29,16 +29,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className=" sticky flex items-center justify-center top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md shadow-sm">
-          <Navbar/>
+        <div className="sticky flex items-center justify-center top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md shadow-sm">
+          <Navbar />
         </div>
         {children}
         <section className="mt-12">
-          
-          <Footer/>
-        
+          <Footer />
         </section>
-        
       </body>
     </html>
   );

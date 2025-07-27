@@ -2,6 +2,7 @@
 import { Cardhover } from "@/components/Cardhover";
 import { Globe } from "@/components/Globe";
 import Hero from "@/components/Hero";
+import { Story } from "@/components/Story";
 
 export default function Home() {
   return (
@@ -15,7 +16,7 @@ export default function Home() {
         </h1>
 
         <div className="mt-12">
-          <Cardhover />
+          <Story />
         </div>
       </section>
 

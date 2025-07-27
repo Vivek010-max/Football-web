@@ -2,6 +2,7 @@
 import React from "react";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Spotlight } from "@/components/ui/Spotlight"
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -17,6 +18,29 @@ export default function Hero() {
           Get real-time stats, tactical breakdowns, and player insights — all in one place.
           Perfect for fans, analysts, and fantasy football enthusiasts alike.
         </p>
+         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+  <Link
+    href="/signup"
+    className="px-6 py-2 rounded-full border border-white/20 bg-transparent transition hover:bg-white/10"
+  >
+    <span className="text-sm sm:text-base font-bold font-sans bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600">
+      Sign Up
+    </span>
+  </Link>
+  <Link
+    href="/login"
+    className="px-6 py-2 rounded-full border border-white/20 bg-transparent transition hover:bg-white/10"
+  >
+    <span className="text-sm sm:text-base font-bold font-sans bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600">
+      Login
+    </span>
+  </Link>
+</div>
+
+
+       
+
+               
       </div>
 
       <BackgroundBeams />

@@ -17,15 +17,19 @@ function Navbar({ className }: { className?: string }) {
 
           </MenuItem>
         </Link>
-
-        <MenuItem setActive={setActive} active={active} item="Matches">
-
-        </MenuItem>
-
-        <MenuItem setActive={setActive} active={active} item="Builder XI">
+         
+        <Link href="/matches"> 
+        <MenuItem setActive={setActive} active={active} item="Matches" >
 
         </MenuItem>
+        </Link>
+        
+        <Link href="/builderxi">
+        <MenuItem setActive={setActive} active={active} item="Builder XI ">
 
+        </MenuItem>
+        </Link>
+         
         <MenuItem setActive={setActive} active={active} item="Tournaments">
 
           <div className="flex flex-col space-y-4 text-sm">

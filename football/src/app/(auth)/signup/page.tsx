@@ -2,7 +2,7 @@
 "use client"; // This is needed because SignupFormDemo is a client component.
 
 import React from "react";
-import { SignupFormDemo } from "@/components/SignupFormDemo";
+import { SignupFormDemo } from "@/components/SignupForm";
 
 export default function SignupPage() {
   return (

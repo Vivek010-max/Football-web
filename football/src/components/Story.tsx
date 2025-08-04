@@ -38,7 +38,7 @@ export function Story() {
 
 const dummyContent = [
   {
-    title: "RashFord to FC Barcelona on Loan",
+    title: "Yamal And Balde shine for FC Barcelona",
     description: (
       <>
     <p>
@@ -54,7 +54,7 @@ const dummyContent = [
     ),
     badge: "",
     image:
-      "https://media.gettyimages.com/id/2226680011/photo/barcelona-spain-marcus-rashford-of-fc-barcelona-holds-up-his-shirt-during-the-unveiling-of.jpg?s=612x612&w=0&k=20&c=uLVhy-EZE7zctM1q1XG6al7MRrE0OPoZ5SG9tD70weA=",
+      "https://media.gettyimages.com/id/2209421913/photo/barcelona-spain-lamine-yamal-of-fc-barcelona-celebrates-scoring-his-teams-fourth-goal-with.jpg?s=612x612&w=0&k=20&c=Hfe8LBN8D2hWkviqGF_Z7kJyKBYx4ZBuuNp-vEAsxAc=",
   },
   {
     title: "Mbappe to Take Number 10 at Real Madrid",

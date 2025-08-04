@@ -1,7 +1,7 @@
 
 "use client"; 
 import React from "react";
-import { LoginFormDemo } from "@/components/LoginFormDemo"; 
+import { LoginFormDemo } from "@/components/LoginForm"; 
 
 export default function LoginPage() {
   return (

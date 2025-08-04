@@ -18,8 +18,8 @@ function Navbar({ className }: { className?: string }) {
           </MenuItem>
         </Link>
          
-        <Link href="/matches"> 
-        <MenuItem setActive={setActive} active={active} item="Matches" >
+        <Link href="/simmatch"> 
+        <MenuItem setActive={setActive} active={active} item="Simmatch" >
 
         </MenuItem>
         </Link>

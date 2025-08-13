@@ -26,10 +26,10 @@ export default function ResultCard({ result, onReset }: ResultCardProps) {
   const { teamA, teamB, halfTimeScore, fullTimeScore, events } = result;
 
   return (
-    <div className="max-w-2xl mx-auto text-center px-4">
+    <div className="max-w-2xl mx-auto text-center px-4  pt-40">
       <h2 className="text-3xl font-bold mb-6">🏁 Full-Time</h2>
 
-      <div className="flex items-center justify-center gap-6 mb-6">
+      <div className="flex items-center justify-center gap-6 mb-6 pt-6">
         {/* Team A */}
         <div className="flex flex-col items-center">
           <img

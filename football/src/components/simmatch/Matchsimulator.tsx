@@ -60,7 +60,7 @@ export default function MatchSimulator({
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 text-center">
+    <div className="max-w-2xl mx-auto px-4 text-center pt-40">
       <h2 className="text-3xl font-bold mb-6">Match In Progress</h2>
       <div className="bg-black text-white rounded-lg p-6 h-[400px] overflow-y-auto space-y-3 font-mono shadow-xl">
         {displayedEvents.length === 0 && <p>Loading kickoff...</p>}

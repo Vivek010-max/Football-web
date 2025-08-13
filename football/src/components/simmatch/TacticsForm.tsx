@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
+import { Target, Zap, Shield, ArrowRight } from "lucide-react";
 
 type Tactics = {
   style: "Attacking" | "Balanced" | "Defensive";
   press: "High Press" | "Medium" | "Low Block";
   buildUp: "Fast" | "Slow";
+  
 };
 
 type TacticsFormProps = {
@@ -16,72 +18,90 @@ export default function TacticsForm({ onSelectTactics }: TacticsFormProps) {
     style: "Balanced",
     press: "Medium",
     buildUp: "Fast",
+    
   });
 
   const handleChange = (field: keyof Tactics, value: string) => {
-    setTactics((prev) => ({
-      ...prev,
-      [field]: value as any,
-    }));
+    setTactics((prev) => ({ ...prev, [field]: value as any }));
+    // micro-pulse
+    const node = document.getElementById("tactics-form");
+    node?.classList.add("animate-pulse");
+    setTimeout(() => node?.classList.remove("animate-pulse"), 150);
   };
 
-  const handleSubmit = () => {
-    onSelectTactics(tactics);
-  };
+  const handleSubmit = () => onSelectTactics(tactics);
+
+  const TacticRow = ({
+    label,
+    field,
+    icon,
+    options,
+  }: {
+    label: string;
+    field: keyof Tactics;
+    icon: React.ReactNode;
+    options: string[];
+  }) => (
+    <div>
+      <label className="flex items-center gap-2 mb-2 font-mono text-sm uppercase tracking-widest text-neutral-400">
+        {icon}
+        {label}
+      </label>
+      <div className="flex gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt}
+            onClick={() => handleChange(field, opt)}
+            className={`flex-1 py-2 text-sm border transition
+              ${
+                tactics[field] === opt
+                  ? "bg-white text-black border-white"
+                  : "border-neutral-700 text-neutral-400 hover:border-neutral-500"
+              }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="max-w-xl mx-auto">
-      <h2 className="text-3xl font-bold text-center mb-8">Set Your Tactics</h2>
+    <main className="min-h-screen flex items-center justify-center bg-black text-white px-4 pt-10">
+      <div id="tactics-form" className="w-full max-w-md space-y-8">
+        <h1 className="text-center font-mono text-2xl tracking-widest uppercase">
+          Set Tactics
+        </h1>
 
-      <div className="grid gap-6">
-        {/* STYLE */}
-        <div>
-          <label className="block mb-2 font-semibold">Play Style</label>
-          <select
-            className="w-full px-4 py-2 rounded-md border bg-white dark:bg-neutral-900 dark:text-white"
-            value={tactics.style}
-            onChange={(e) => handleChange("style", e.target.value)}
-          >
-            <option>Attacking</option>
-            <option>Balanced</option>
-            <option>Defensive</option>
-          </select>
-        </div>
+        <TacticRow
+          label="Play Style"
+          field="style"
+          icon={<Target className="w-4 h-4" />}
+          options={["Attacking", "Balanced", "Defensive"]}
+        />
 
-        {/* PRESS */}
-        <div>
-          <label className="block mb-2 font-semibold">Pressing</label>
-          <select
-            className="w-full px-4 py-2 rounded-md border bg-white dark:bg-neutral-900 dark:text-white"
-            value={tactics.press}
-            onChange={(e) => handleChange("press", e.target.value)}
-          >
-            <option>High Press</option>
-            <option>Medium</option>
-            <option>Low Block</option>
-          </select>
-        </div>
+        <TacticRow
+          label="Pressing"
+          field="press"
+          icon={<Zap className="w-4 h-4" />}
+          options={["High Press", "Medium", "Low Block"]}
+        />
 
-        {/* BUILD-UP */}
-        <div>
-          <label className="block mb-2 font-semibold">Build-up Play</label>
-          <select
-            className="w-full px-4 py-2 rounded-md border bg-white dark:bg-neutral-900 dark:text-white"
-            value={tactics.buildUp}
-            onChange={(e) => handleChange("buildUp", e.target.value)}
-          >
-            <option>Fast</option>
-            <option>Slow</option>
-          </select>
-        </div>
+        <TacticRow
+          label="Build-up"
+          field="buildUp"
+          icon={<Shield className="w-4 h-4" />}
+          options={["Fast", "Slow"]}
+        />
+
+        <button
+          onClick={handleSubmit}
+          className="w-full flex items-center justify-center gap-2 py-3 border border-white text-white hover:bg-white hover:text-black transition"
+        >
+          Confirm
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
-
-      <button
-        className="mt-8 w-full py-3 bg-black text-white rounded-lg hover:bg-neutral-800 transition"
-        onClick={handleSubmit}
-      >
-        Confirm Tactics
-      </button>
-    </div>
+    </main>
   );
 }

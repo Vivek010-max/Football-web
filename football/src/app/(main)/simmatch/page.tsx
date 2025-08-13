@@ -43,7 +43,7 @@ export default function SimMatchPage() {
 
   return (
     <main className="min-h-screen px-6 pt-4 pb-12 bg-neutral-100 dark:bg-black">
-      <div className="max-w-5xl mx-auto">
+      <div className=" max-w-5xl mx-auto">
         {step === 1 && (
           <TeamPicker
             onSelectTeam={(team) => {

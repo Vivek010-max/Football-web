@@ -9,7 +9,7 @@ export default function SignupPage() {
     <div
       // This div handles the full screen background image
       className="relative min-h-screen bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/images/signupbg.jpg')" }} // <-- YOUR IMAGE PATH HERE!
+      style={{ backgroundImage: "url('/images/bgimage.jpg')" }} // <-- YOUR IMAGE PATH HERE!
     >
       
       <div className="absolute inset-0 bg-black opacity-50"></div>

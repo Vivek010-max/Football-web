@@ -9,7 +9,7 @@ export default function LoginPage() {
 
       className="relative min-h-screen bg-cover bg-center bg-no-repeat"
       
-      style={{ backgroundImage: "url('/images/signupbg.jpg')" }}
+      style={{ backgroundImage: "url('/images/bgimage.jpg')" }}
     >
        
       <div className="absolute inset-0 bg-black opacity-50"></div>

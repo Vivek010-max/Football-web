@@ -19,7 +19,12 @@ type Tactics = {
 type MatchSimulatorProps = {
   team: Team;
   tactics: Tactics;
-  onSimulate: (result: any) => void;
+  onSimulate: (result: MatchResult) => void;
+};
+
+type MatchResult = {
+  events: string[];
+  score?: { team: number; opponent: number };
 };
 
 export default function MatchSimulator({
@@ -29,7 +34,6 @@ export default function MatchSimulator({
 }: MatchSimulatorProps) {
   const [events, setEvents] = useState<string[]>([]);
   const [displayedEvents, setDisplayedEvents] = useState<string[]>([]);
-  const [isSimulating, setIsSimulating] = useState(true);
 
   useEffect(() => {
     const opponent = pickRandomOpponent(team.name);

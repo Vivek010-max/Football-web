@@ -188,7 +188,7 @@ function getTacticsEffectModifier(teamTactics: Tactics, opponentTactics: Tactics
  * @returns {number} A random integer representing the number of goals.
  */
 function poissonRandom(lambda: number): number {
-  let L = Math.exp(-lambda);
+  const L = Math.exp(-lambda);
   let k = 0;
   let p = 1;
   do {

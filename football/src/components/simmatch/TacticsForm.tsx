@@ -22,7 +22,7 @@ export default function TacticsForm({ onSelectTactics }: TacticsFormProps) {
   });
 
   const handleChange = (field: keyof Tactics, value: string) => {
-    setTactics((prev) => ({ ...prev, [field]: value as any }));
+    setTactics((prev) => ({ ...prev, [field]: value as Tactics[keyof Tactics] }));
     // micro-pulse
     const node = document.getElementById("tactics-form");
     node?.classList.add("animate-pulse");

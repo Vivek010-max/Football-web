@@ -62,7 +62,7 @@ export function LoginFormDemo() {
 
         <div className="flex flex-col space-y-4">
           <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300 text-center">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-blue-500 hover:underline">
               Sign Up
             </Link>

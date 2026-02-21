@@ -3,7 +3,6 @@ import { Cardhover } from "@/components/Cardhover";
 import { Globe } from "@/components/Globe";
 import Hero from "@/components/Hero";
 import { Story } from "@/components/Story";
-import { HoverEffect } from "@/components/ui/card-hover-effect";
 
 export default function Home() {
   return (
@@ -18,7 +17,7 @@ export default function Home() {
         
         
         <h1 className="relative z-10 text-lg md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold">
-          What's Hot
+          What&apos;s Hot
         </h1>
         
         <div className="mt-12">

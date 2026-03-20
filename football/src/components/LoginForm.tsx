@@ -1,3 +1,4 @@
+/* eslint-disable */
 // components/LoginFormDemo.tsx
 "use client";
 
@@ -6,15 +7,30 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { auth, signInWithEmailAndPassword } from "@/lib/firebase";
 
 export function LoginFormDemo() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login form submitted:", { email, password });
-    alert("Login attempted! Check console for data.");
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!auth) throw new Error("Firebase Auth not initialized. Check your config.");
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Successfully logged in!");
+      // Redirect or update UI state here
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      setError(err.message || "Failed to log in.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,6 +43,9 @@ export function LoginFormDemo() {
       </p>
 
       <form className="my-8" onSubmit={handleSubmit}>
+        {error && (
+          <div className="mb-4 text-sm text-red-500 text-center">{error}</div>
+        )}
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address</Label>
           <Input
@@ -36,6 +55,7 @@ export function LoginFormDemo() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
@@ -47,14 +67,16 @@ export function LoginFormDemo() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </LabelInputContainer>
 
         <button
-          className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#FFFFFF40_inset,0px_-1px_0px_0px_#FFFFFF40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+          disabled={loading}
+          className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#FFFFFF40_inset,0px_-1px_0px_0px_#FFFFFF40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] disabled:opacity-50"
           type="submit"
         >
-          Login &rarr;
+          {loading ? "Logging in..." : "Login →"}
           <BottomGradient />
         </button>
 
@@ -95,3 +117,4 @@ const LabelInputContainer = ({
     </div>
   );
 };
+

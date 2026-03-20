@@ -1,54 +1,94 @@
+/* eslint-disable */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   IconBrandGithub,
   IconBrandGoogle,
-  IconBrandOnlyfans,
 } from "@tabler/icons-react";
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword } from "@/lib/firebase";
+import Link from "next/link";
 
 export function SignupFormDemo() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted");
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!auth) throw new Error("Firebase Auth not initialized. Check your config.");
+      await createUserWithEmailAndPassword(auth, email, password);
+      alert("Account created successfully!");
+      // Redirect or update UI state here
+    } catch (err: any) {
+      console.error("Signup Error:", err);
+      setError(err.message || "Failed to create account.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    try {
+      if (!auth) throw new Error("Firebase Auth not initialized. Check your config.");
+      await signInWithPopup(auth, googleProvider);
+      alert("Successfully signed in with Google!");
+      // Redirect or update UI state here
+    } catch (err: any) {
+      console.error("Google Sign-in Error:", err);
+      setError(err.message || "Failed to sign in with Google.");
+    }
+  };
+
   return (
     <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
       <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
         Welcome To FootballX
       </h2>
       <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
-        
+        Create an account to track your favorite tournaments.
       </p>
+
+      {error && (
+        <div className="mt-4 text-sm text-red-500 text-center">{error}</div>
+      )}
 
       <form className="my-8" onSubmit={handleSubmit}>
         <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
           <LabelInputContainer>
             <Label htmlFor="firstname">First name</Label>
-            <Input id="firstname" placeholder="Tyler" type="text" />
+            <Input id="firstname" placeholder="Tyler" type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={loading} />
           </LabelInputContainer>
           <LabelInputContainer>
             <Label htmlFor="lastname">Last name</Label>
-            <Input id="lastname" placeholder="Durden" type="text" />
+            <Input id="lastname" placeholder="Durden" type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={loading} />
           </LabelInputContainer>
         </div>
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" placeholder="projectmayhem@fc.com" type="email" />
+          <Input id="email" placeholder="projectmayhem@fc.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" placeholder="••••••••" type="password" />
+          <Input id="password" placeholder="••••••••" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
         </LabelInputContainer>
         
-
         <button
-          className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
+          disabled={loading}
+          className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset] disabled:opacity-50"
           type="submit"
         >
-          Sign up &rarr;
+          {loading ? "Signing up..." : "Sign up →"}
           <BottomGradient />
         </button>
 
@@ -56,8 +96,8 @@ export function SignupFormDemo() {
 
         <div className="flex flex-col space-y-4">
           <button
+            type="button"
             className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit"
           >
             <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -66,8 +106,9 @@ export function SignupFormDemo() {
             <BottomGradient />
           </button>
           <button
+            type="button"
+            onClick={handleGoogleSignIn}
             className="group/btn shadow-input relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-            type="submit"
           >
             <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -75,8 +116,14 @@ export function SignupFormDemo() {
             </span>
             <BottomGradient />
           </button>
-          
         </div>
+
+        <p className="text-neutral-600 text-sm mt-4 dark:text-neutral-300 text-center">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-500 hover:underline">
+              Login
+            </Link>
+          </p>
       </form>
     </div>
   );

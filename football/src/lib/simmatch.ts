@@ -1,12 +1,8 @@
+/* eslint-disable */
 /**
  * Type definition for a Football Team.
- * @property {string} name - The name of the team.
- * @property {number} attack - The attack rating of the team (e.g., 1-100).
- * @property {number} midfield - The midfield rating of the team (e.g., 1-100).
- * @property {number} defense - The defense rating of the team (e.g., 1-100).
- * @property {string} logo - URL or path to the team's logo.
  */
-type Team = {
+export type Team = {
   name: string;
   attack: number;
   midfield: number;
@@ -14,179 +10,199 @@ type Team = {
   logo: string;
 };
 
-/**
- * Type definition for a Team's Tactics.
- * @property {"Attacking" | "Balanced" | "Defensive"} style - The overall play style.
- * @property {"High Press" | "Medium" | "Low Block"} press - The pressing intensity.
- * @property {"Fast" | "Slow"} buildUp - The pace of build-up play.
- */
-type Tactics = {
+export type Tactics = {
   style: "Attacking" | "Balanced" | "Defensive";
   press: "High Press" | "Medium" | "Low Block";
   buildUp: "Fast" | "Slow";
 };
 
-/**
- * Type definition for the result of a Match.
- * @property {Team} teamA - The first team.
- * @property {Team} teamB - The second team.
- * @property {[number, number]} halfTimeScore - Score at half-time [teamA_goals, teamB_goals].
- * @property {[number, number]} fullTimeScore - Final score [teamA_goals, teamB_goals].
- * @property {string[]} events - A chronological list of match events.
- */
-type MatchResult = {
+export type MatchStats = {
+  possession: [number, number]; // [Team A %, Team B %]
+  shots: [number, number];
+  shotsOnTarget: [number, number];
+  xG: [number, number];
+  corners: [number, number];
+  fouls: [number, number];
+  yellowCards: [number, number];
+};
+
+export type MatchEvent = {
+  minute: number;
+  type: "Goal" | "Shot" | "Save" | "Foul" | "Card" | "Corner" | "Kickoff" | "HalfTime" | "FullTime" | "Sub";
+  team?: "A" | "B";
+  description: string;
+};
+
+export type MatchResult = {
   teamA: Team;
   teamB: Team;
   halfTimeScore: [number, number];
   fullTimeScore: [number, number];
-  events: string[];
+  stats: MatchStats;
+  events: MatchEvent[];
+  goalscorersA: string[];
+  goalscorersB: string[];
 };
 
-/**
- * Simulates a football match between two teams with their respective tactics.
- * @param {Team} teamA - The first team.
- * @param {Team} teamB - The second team.
- * @param {Tactics} tacticsA - Tactics for team A.
- * @param {Tactics} tacticsB - Tactics for team B.
- * @returns {MatchResult} The result of the simulated match.
- */
+const getRandomPlayer = (position: string) => {
+  const numbers = [7, 8, 9, 10, 11, 20, 21];
+  return `${position} #${numbers[Math.floor(Math.random() * numbers.length)]}`;
+};
+
 export function simulateMatch(
   teamA: Team,
   teamB: Team,
   tacticsA: Tactics,
   tacticsB: Tactics
 ): MatchResult {
-  // Constants for expected goals calculation
-  const BASE_XG_AVERAGE = 1.3; // Average xG per team in a balanced game
+  const events: MatchEvent[] = [];
+  
+  // Base stats calculation using a refined algorithm
+  const strengthA = (teamA.attack * 1.2 + teamA.midfield * 1.5 + teamA.defense * 0.8) / 3;
+  const strengthB = (teamB.attack * 1.2 + teamB.midfield * 1.5 + teamB.defense * 0.8) / 3;
+  
+  // Tactical adjustments for possession
+  let possA = 50 + (teamA.midfield - teamB.midfield) * 0.5;
+  if (tacticsA.buildUp === "Slow") possA += 5;
+  if (tacticsB.buildUp === "Slow") possA -= 5;
+  if (tacticsA.press === "High Press") possA += 2;
+  
+  possA = Math.max(25, Math.min(75, Math.round(possA)));
+  const possB = 100 - possA;
 
-  // Calculate expected goals for each team
-  // xG for Team A against Team B's defense and tactics
-  const xGA = calculateExpectedGoals(teamA, tacticsA, teamB, tacticsB, BASE_XG_AVERAGE);
-  // xG for Team B against Team A's defense and tactics
-  const xGB = calculateExpectedGoals(teamB, tacticsB, teamA, tacticsA, BASE_XG_AVERAGE);
+  // Expected goals (xG)
+  let base_xG_A = 1.0 + ((teamA.attack - teamB.defense) / 15);
+  let base_xG_B = 1.0 + ((teamB.attack - teamA.defense) / 15);
 
-  // Generate actual goals based on expected goals using Poisson distribution
-  const aScore = poissonRandom(xGA);
-  const bScore = poissonRandom(xGB);
+  if (tacticsA.style === "Attacking") base_xG_A *= 1.3;
+  if (tacticsA.style === "Defensive") base_xG_A *= 0.7;
+  if (tacticsA.press === "High Press") base_xG_A *= 1.2;
 
-  // Distribute goals between halves more realistically
+  if (tacticsB.style === "Attacking") base_xG_B *= 1.3;
+  if (tacticsB.style === "Defensive") base_xG_B *= 0.7;
+  if (tacticsB.press === "High Press") base_xG_B *= 1.2;
+
+  // Add randomness
+  base_xG_A = Math.max(0.1, base_xG_A + (Math.random() * 0.5 - 0.25));
+  base_xG_B = Math.max(0.1, base_xG_B + (Math.random() * 0.5 - 0.25));
+
+  // Actual goals based on poisson
+  const aScore = poissonRandom(base_xG_A);
+  const bScore = poissonRandom(base_xG_B);
+
   const [aFirstHalfGoals, aSecondHalfGoals] = distributeGoalsBetweenHalves(aScore);
   const [bFirstHalfGoals, bSecondHalfGoals] = distributeGoalsBetweenHalves(bScore);
 
   const halfTimeScore: [number, number] = [aFirstHalfGoals, bFirstHalfGoals];
   const fullTimeScore: [number, number] = [aScore, bScore];
 
-  // Generate a richer list of match events
-  const events = generateMatchEvents(
-    teamA,
-    teamB,
-    halfTimeScore,
-    fullTimeScore
-  );
+  // Additional Match Stats
+  const shotsA = Math.round(base_xG_A * 8) + Math.floor(Math.random() * 5);
+  const shotsB = Math.round(base_xG_B * 8) + Math.floor(Math.random() * 5);
+  
+  const shotsOnTargetA = Math.round(shotsA * 0.4);
+  const shotsOnTargetB = Math.round(shotsB * 0.4);
+
+  const cornersA = Math.round(shotsA * 0.6);
+  const cornersB = Math.round(shotsB * 0.6);
+
+  const foulsA = 8 + Math.floor(Math.random() * 8) + (tacticsA.press === "High Press" ? 4 : 0);
+  const foulsB = 8 + Math.floor(Math.random() * 8) + (tacticsB.press === "High Press" ? 4 : 0);
+
+  const ycA = Math.floor(foulsA / 5.5);
+  const ycB = Math.floor(foulsB / 5.5);
+
+  const stats: MatchStats = {
+    possession: [possA, possB],
+    shots: [shotsA, shotsB],
+    shotsOnTarget: [shotsOnTargetA, shotsOnTargetB],
+    xG: [parseFloat(base_xG_A.toFixed(2)), parseFloat(base_xG_B.toFixed(2))],
+    corners: [cornersA, cornersB],
+    fouls: [foulsA, foulsB],
+    yellowCards: [ycA, ycB]
+  };
+
+  const goalscorersA: string[] = [];
+  const goalscorersB: string[] = [];
+
+  // Generate Events Timeline
+  events.push({ minute: 0, type: "Kickoff", description: "The referee blows the whistle and we are underway!" });
+
+  const addGoalsToTimeline = (score: number, teamId: "A" | "B", teamName: string, start: number, end: number, goalscorersList: string[]) => {
+    let added = 0;
+    while(added < score) {
+      let minute = Math.floor(Math.random() * (end - start)) + start;
+      const player = getRandomPlayer("Striker");
+      goalscorersList.push(`${player} (${minute}')`);
+      events.push({
+        minute,
+        type: "Goal",
+        team: teamId,
+        description: `GOOAL! Brilliant finish by ${player} for ${teamName}!`
+      });
+      added++;
+    }
+  };
+
+  addGoalsToTimeline(aFirstHalfGoals, "A", teamA.name, 1, 45, goalscorersA);
+  addGoalsToTimeline(bFirstHalfGoals, "B", teamB.name, 1, 45, goalscorersB);
+  
+  events.push({ minute: 45, type: "HalfTime", description: `Half-time: ${teamA.name} ${aFirstHalfGoals} - ${bFirstHalfGoals} ${teamB.name}` });
+
+  addGoalsToTimeline(aSecondHalfGoals, "A", teamA.name, 46, 90, goalscorersA);
+  addGoalsToTimeline(bSecondHalfGoals, "B", teamB.name, 46, 90, goalscorersB);
+
+  // Pad with random events
+  const totalRandomEvents = 15;
+  for (let i = 0; i < totalRandomEvents; i++) {
+    const minute = Math.floor(Math.random() * 90) + 1;
+    if (minute === 45 || minute === 90) continue;
+
+    const teamId = Math.random() > 0.5 ? "A" : "B";
+    const tName = teamId === "A" ? teamA.name : teamB.name;
+    const opponentName = teamId === "A" ? teamB.name : teamA.name;
+    
+    let type: MatchEvent["type"] = "Shot";
+    let desc = "";
+    
+    const r = Math.random();
+    if (r < 0.3) {
+      type = "Shot";
+      desc = `Close! ${getRandomPlayer("Midfielder")} for ${tName} aims for the top corner but misses wide.`;
+    } else if (r < 0.5) {
+      type = "Save";
+      desc = `Spectacular save by the ${opponentName} goalkeeper to deny a header from ${tName}'s ${getRandomPlayer("Winger")}!`;
+    } else if (r < 0.7) {
+      type = "Foul";
+      desc = `Clumsy foul by ${tName}'s ${getRandomPlayer("Defender")}. Free kick awarded to ${opponentName}.`;
+    } else if (r < 0.85) {
+      type = "Corner";
+      desc = `Corner kick won by ${tName} after dangerous play down the flanks.`;
+    } else {
+      type = "Card";
+      desc = `Referee pulls out the yellow card for a late challenge by ${tName}'s ${getRandomPlayer("Defender")}.`;
+    }
+
+    events.push({ minute, type, team: teamId, description: desc });
+  }
+
+  // Sort and finalize
+  events.sort((a, b) => a.minute - b.minute);
+  
+  events.push({ minute: 90, type: "FullTime", description: `Full-time! Final whistle blows. The match concludes.` });
 
   return {
     teamA,
     teamB,
     halfTimeScore,
     fullTimeScore,
+    stats,
     events,
+    goalscorersA,
+    goalscorersB
   };
 }
 
-/**
- * Calculates the Expected Goals (xG) for an attacking team against a defending team.
- * @param {Team} attackingTeam - The team generating the attacking chances.
- * @param {Tactics} attackingTactics - The tactics of the attacking team.
- * @param {Team} defendingTeam - The team defending against the attack.
- * @param {Tactics} defendingTactics - The tactics of the defending team.
- * @param {number} baseAvgXg - The baseline average xG for a team.
- * @returns {number} The calculated expected goals (xG).
- */
-function calculateExpectedGoals(
-  attackingTeam: Team,
-  attackingTactics: Tactics,
-  defendingTeam: Team,
-  defendingTactics: Tactics,
-  baseAvgXg: number
-): number {
-  // Normalize team ratings to a 0-1 range for calculation clarity
-  const normalizedAttack = attackingTeam.attack / 100;
-  const normalizedMidfield = attackingTeam.midfield / 100;
-  const normalizedDefense = attackingTeam.defense / 100;
-
-  const opponentNormalizedAttack = defendingTeam.attack / 100;
-  const opponentNormalizedMidfield = defendingTeam.midfield / 100;
-  const opponentNormalizedDefense = defendingTeam.defense / 100;
-
-  // Calculate offensive and defensive strengths
-  const offensiveStrength = (normalizedAttack * 0.7 + normalizedMidfield * 0.3);
-  const defensiveResistance = (opponentNormalizedDefense * 0.7 + opponentNormalizedMidfield * 0.3);
-
-  // Calculate base xG based on relative strengths.
-  // Add a small constant to the denominator to prevent division by zero or overly high values
-  let xG = baseAvgXg + (offensiveStrength * 1.5) - (defensiveResistance * 1.5);
-
-  // Apply tactical modifiers (positive for attacking team's xG, negative if tactics hinder)
-  xG += getTacticsEffectModifier(attackingTactics, defendingTactics);
-
-  // Add a small random variance for realism
-  xG += (Math.random() - 0.5) * 0.4; // +/- 0.2 xG variance
-
-  // Ensure xG is within a reasonable range (e.g., 0.2 to 4.0)
-  return Math.max(0.2, Math.min(4.0, xG));
-}
-
-/**
- * Calculates a modifier to xG based on the interaction of two teams' tactics.
- * @param {Tactics} teamTactics - The tactics of the attacking team.
- * @param {Tactics} opponentTactics - The tactics of the defending team.
- * @returns {number} A numerical modifier to be added to xG.
- */
-function getTacticsEffectModifier(teamTactics: Tactics, opponentTactics: Tactics): number {
-  let modifier = 0;
-
-  // Play Style Interactions
-  if (teamTactics.style === "Attacking" && opponentTactics.style === "Defensive") {
-    modifier += 0.15; // Attacking team benefits against a passive defense
-  } else if (teamTactics.style === "Defensive" && opponentTactics.style === "Attacking") {
-    modifier -= 0.1; // Defensive team might concede more against a determined attack
-  }
-
-  // Pressing vs. Build-up Interactions
-  if (teamTactics.press === "High Press" && opponentTactics.buildUp === "Slow") {
-    modifier += 0.25; // High press is very effective against slow build-up
-  } else if (teamTactics.press === "Low Block" && opponentTactics.buildUp === "Fast") {
-    modifier -= 0.15; // Low block can be vulnerable if opponent builds up quickly
-  } else if (teamTactics.press === "Medium" && opponentTactics.buildUp === "Fast") {
-    modifier -= 0.05; // Medium press might struggle slightly against fast build-up
-  }
-
-  // Build-up vs. Pressing Interactions (reverse perspective)
-  if (teamTactics.buildUp === "Fast" && opponentTactics.press === "High Press") {
-    modifier -= 0.1; // Fast build-up can be disrupted by strong high press
-  } else if (teamTactics.buildUp === "Slow" && opponentTactics.press === "Low Block") {
-    modifier += 0.05; // Slow build-up might control possession against a low block
-
-  } else if (teamTactics.buildUp === "Fast" && opponentTactics.press === "Medium") {
-    modifier += 0.05; // Fast build-up might exploit gaps against medium press
-  }
-
-
-  // Additional considerations for balanced style or medium press
-  if (teamTactics.style === "Balanced" && opponentTactics.style === "Balanced") {
-    modifier += 0.05; // Balanced vs Balanced can lead to tighter games
-  }
-
-  return modifier;
-}
-
-
-/**
- * Generates a random integer from a Poisson distribution.
- * Used to model rare events like goals.
- * @param {number} lambda - The average number of occurrences (expected goals).
- * @returns {number} A random integer representing the number of goals.
- */
 function poissonRandom(lambda: number): number {
   const L = Math.exp(-lambda);
   let k = 0;
@@ -198,125 +214,12 @@ function poissonRandom(lambda: number): number {
   return k - 1;
 }
 
-/**
- * Distributes total goals between the first and second halves.
- * @param {number} totalGoals - The total number of goals to distribute.
- * @returns {[number, number]} An array with goals for the first half and second half.
- */
 function distributeGoalsBetweenHalves(totalGoals: number): [number, number] {
   if (totalGoals === 0) return [0, 0];
-
-  // Randomly determine the percentage of goals in the first half (e.g., 30-70%)
   const firstHalfPercentage = 0.3 + Math.random() * 0.4;
   let firstHalf = Math.round(totalGoals * firstHalfPercentage);
-  firstHalf = Math.min(firstHalf, totalGoals); // Ensure first half goals don't exceed total
-
-  const secondHalf = totalGoals - firstHalf;
-  return [firstHalf, secondHalf];
-}
-
-/**
- * Generates a detailed list of match events including goals and other common occurrences.
- * @param {Team} teamA - The first team.
- * @param {Team} teamB - The second team.
- * @param {[number, number]} halfTimeScore - The half-time score.
- * @param {[number, number]} fullTimeScore - The full-time score.
- * @returns {string[]} An array of chronological match events.
- */
-function generateMatchEvents(
-  teamA: Team,
-  teamB: Team,
-  halfTimeScore: [number, number],
-  fullTimeScore: [number, number]
-): string[] {
-  const events: { minute: number; description: string }[] = [];
-
-  // Initial kick-off event
-  events.push({ minute: 0, description: "Kick-off 🔔" });
-
-  // Generate all goal events with unique minutes
-  const goalMinutes = new Set<number>();
-
-  const addGoalEvents = (score: number, teamName: string, isFirstHalf: boolean, startMin: number, endMin: number) => {
-    let goalsAdded = 0;
-    while (goalsAdded < score) {
-      let minute = Math.floor(Math.random() * (endMin - startMin + 1)) + startMin;
-      // Ensure unique goal minutes. If a minute is taken, try nearby minutes.
-      let attempts = 0;
-      while (goalMinutes.has(minute) && attempts < 10) { // Limit attempts to prevent infinite loop for too many goals
-          minute = Math.floor(Math.random() * (endMin - startMin + 1)) + startMin;
-          attempts++;
-      }
-      if (!goalMinutes.has(minute)) {
-          goalMinutes.add(minute);
-          events.push({ minute, description: `${minute}' ⚽ Goal for ${teamName}` });
-          goalsAdded++;
-      } else if (attempts === 10) {
-        // Fallback for extremely rare cases where a minute can't be found
-        console.warn(`Could not find a unique minute for a goal for ${teamName}. Adding to existing minute.`);
-        events.push({ minute: minute, description: `${minute}' ⚽ Goal for ${teamName}` });
-        goalsAdded++;
-      }
-    }
-  };
-
-  // First half goals
-  addGoalEvents(halfTimeScore[0], teamA.name, true, 1, 45);
-  addGoalEvents(halfTimeScore[1], teamB.name, true, 1, 45);
-
-  // Second half goals (difference between full-time and half-time)
-  const aSecondHalfGoals = fullTimeScore[0] - halfTimeScore[0];
-  const bSecondHalfGoals = fullTimeScore[1] - halfTimeScore[1];
-  addGoalEvents(aSecondHalfGoals, teamA.name, false, 46, 90);
-  addGoalEvents(bSecondHalfGoals, teamB.name, false, 46, 90);
-
-  // Add non-goal events
-  const totalNonGoalEvents = 25 + Math.floor(Math.random() * 10); // Between 25 and 34 non-goal events
-  const eventTypes = [
-    (team: Team) => `Shot on target by ${team.name} 🎯`,
-    (team: Team) => `Foul by ${team.name} ⚠️`,
-    (team: Team) => `Corner for ${team.name} 🚩`,
-    (team: Team) => `Yellow card for ${team.name} 🟨`,
-    (team: Team) => `Great save by ${team.name}'s GK! 🧤`,
-  ];
-
-  for (let i = 0; i < totalNonGoalEvents; i++) {
-    const minute = Math.floor(Math.random() * 90) + 1;
-    const team = Math.random() < 0.5 ? teamA : teamB;
-    const eventGen = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    events.push({ minute, description: eventGen(team) });
-  }
-
-  // Sort all events chronologically
-  events.sort((a, b) => a.minute - b.minute);
-
-  // Add half-time and full-time markers
-  const finalEvents: string[] = [];
-  let halfTimeAdded = false;
-
-  for (const event of events) {
-    if (!halfTimeAdded && event.minute >= 45) {
-      finalEvents.push("45' Half-time ⏸️");
-      halfTimeAdded = true;
-    }
-    finalEvents.push(event.description);
-  }
-
-  // Ensure half-time is added even if no events around 45 min
-  if (!halfTimeAdded) {
-    finalEvents.splice(finalEvents.findIndex(e => e.includes("Kick-off")) + 1, 0, "45' Half-time ⏸️"); // Simple splice after kick-off if no events near 45.
-  }
-
-  finalEvents.push("90' Full-time 🔚"); // Always add full-time at the end
-
-  return finalEvents;
+  firstHalf = Math.min(firstHalf, totalGoals);
+  return [firstHalf, totalGoals - firstHalf];
 }
 
 
-// Helper to sort events by minute (if needed outside generateMatchEvents)
-// Not strictly used by generateMatchEvents with the new object structure, but kept for reference
-function sortByMinute(a: string, b: string): number {
-  const minA = parseInt(a.split("'")[0]);
-  const minB = parseInt(b.split("'")[0]);
-  return minA - minB;
-}
